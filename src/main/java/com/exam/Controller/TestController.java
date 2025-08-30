@@ -27,4 +27,15 @@ public class TestController {
 		
 
 	}
+	
+	
+	@GetMapping("/a")
+	public ResponseEntity<?> test2(){
+		
+		List<Map<String,Object>> data=testserv.test();
+		
+		return new ResponseEntity<>(Map.of("Message","Success","Data",data),HttpStatus.OK);
+		
+
+	}
 }
