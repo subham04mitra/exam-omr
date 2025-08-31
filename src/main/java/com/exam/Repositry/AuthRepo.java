@@ -41,7 +41,7 @@ public class AuthRepo {
 		Map<String,Object> params=new HashMap<>();
 		String query="";
 		try {
-			System.out.println(uuid+jwt);
+//			System.out.println(uuid+jwt);
 			query="""
 					INSERT INTO masadmin.mas_user_vs_token
 					("uuid", jwt,is_invalid,is_logout, entry_ts)
@@ -82,13 +82,13 @@ public class AuthRepo {
 		Map<String,Object> params=new HashMap<>();
 		String query="";
 		try {
-			if("Refresh".equals(type)) {
+			if("Refresh".equalsIgnoreCase(type)) {
 				query="""
 						update masadmin.mas_user_vs_token set is_invalid =true 
 						where jwt=:jwt 
 						""";
 			}
-			else if("Logout".equals(type)) {
+			else if("Logout".equalsIgnoreCase(type)) {
 				query="""
 						update masadmin.mas_user_vs_token set is_logout =true 
 						where jwt=:jwt 
