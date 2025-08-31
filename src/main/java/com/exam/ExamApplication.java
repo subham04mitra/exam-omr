@@ -18,10 +18,10 @@ public class ExamApplication {
 	        @Override
 	        public void addCorsMappings(CorsRegistry registry) {
 	            registry.addMapping("/**")
-	                .allowedOrigins("http://localhost:5173") // React dev server
+	                .allowedOrigins("*") // React dev server
 	                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 	                .allowedHeaders("*")
-	                .allowCredentials(true); // only if you send cookies/Authorization headers
+	                .allowCredentials(false); // only if you send cookies/Authorization headers
 	        }
 	    };
 	}
