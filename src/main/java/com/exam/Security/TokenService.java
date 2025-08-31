@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.exam.Repositry.AuthRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
@@ -26,7 +27,8 @@ import io.jsonwebtoken.security.Keys;
 public class TokenService {
 	
   
-
+	@Autowired
+	AuthRepo authrepo;
 	
 	 @Value("${jwt.expiry}")
 	 private int jwtExp;
@@ -34,21 +36,17 @@ public class TokenService {
 	 private int refTime;
 	 @Value("${jwt.secret}")
 	 private String secretKey;
-	public boolean validateTokenAndReturnBool(String token, String ip) {
+	public boolean validateTokenAndReturnBool(String token) {
         try {        	 
             Claims claims = validateToken(token);
            
             if (claims != null) {
-                String userId = claims.getSubject();
-                String cd = claims.get("unique_name", String.class);
-//                
+                String userId = claims.getSubject();                
                 
-                List<Map<String, Object>> data =null;
-//                		masterRepository.CheckLogoutForToken(cd, userId, token,ip);
+                List<Map<String, Object>> data =authrepo.tokenCheckRepo( userId,token);
                 ////System.out.println("----"+data);
                 if (data != null && !data.isEmpty()) {
-                    boolean isLogout = (Boolean) data.get(0).get("check_flag");
-                    ////System.out.println(isLogout);
+                    boolean isLogout = (Boolean) data.get(0).get("is_invalid");
                     return !isLogout; 
                 }
             }
@@ -66,7 +64,7 @@ public class TokenService {
         Date now = new Date(); 
         Claims claims = Jwts.claims().setSubject(uuid);
         claims.put("role", role);
-
+        claims.put("expiry", expiryTime.toInstant().toString());
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
@@ -77,6 +75,7 @@ public class TokenService {
     }
 
 	public Claims validateToken(String token) {
+//		System.out.println(secretKey);
 	        Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 	
 	        try {
@@ -92,7 +91,7 @@ public class TokenService {
 	        }
 	    }
 	
-	 public String generateRefreshToken(String token, String secretKey, String ip) throws Exception {
+	 public String generateRefreshToken(String token)  {
 	        try {
 	            Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 	            JwtParser parser = Jwts.parserBuilder().setSigningKey(key).build();
@@ -108,7 +107,7 @@ public class TokenService {
 
 	            Date expiryTime = Date.from(Instant.parse(expiryClaim));
 	            Date nowPlusFiveMinutes = Date.from(Instant.now().plus(refTime, ChronoUnit.MINUTES));
-	            if (expiryTime.before(nowPlusFiveMinutes) && ip.equals(claims.get("role", String.class))) {
+	            if (expiryTime.before(nowPlusFiveMinutes)) {
 	                String uid = claims.get("sub", String.class);
 	                String role = claims.get("role", String.class);
 
@@ -134,8 +133,9 @@ public class TokenService {
 //			 String secretKey2="your_fixed_secret_key_here_jkenfjenfjefbjefbkejfbed";
 	            Claims claims = validateToken(token);
 	            if (claims != null) {
-	                String userID = claims.get("unique_name", String.class);
-	                String role = claims.get("sub", String.class);
+	                String userID = claims.get("sub", String.class);
+	                String role = claims.get("role", String.class);
+//	                System.out.println(userID);
 	                return new String[]{role, userID};
 	                
 	            } else {
