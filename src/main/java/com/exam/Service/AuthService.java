@@ -19,6 +19,7 @@ import com.exam.resDTO.LoginResModel;
 @Service
 public class AuthService {
 	
+	
 	@Autowired
 	AuthRepo authrepo;
 	@Autowired
