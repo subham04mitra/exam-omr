@@ -16,5 +16,17 @@ public class CommonReqModel {
 	private String uuid;
 	private String user_pwd;
 	private String token;
+	private String subject;
+	private String chapter;
+	private String examName;
+	private String duration;
+	private String examDate;
+	private String totalMarks;
+	private String totalQs;
+	private String exam;
+	private String examType;
+	private Object topics;
+	
+	
 	
 }
