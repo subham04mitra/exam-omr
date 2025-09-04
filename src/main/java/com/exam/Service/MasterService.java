@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import com.exam.Security.TokenService;
 import com.exam.reqDTO.CommonReqModel;
 import com.exam.resDTO.DashResModel;
 import com.exam.resDTO.MasResDTO;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -204,9 +206,9 @@ public class MasterService {
 	
 	public ResponseEntity<ApiResponses> savePaperService(CommonReqModel model, ResponseBean response, String authToken) throws Exception{
 		int data=0;
-		List<Map<String,Object>> data2=null;
+		List<Map<String,Object>> data2=null,data3=null,data4=null,data5=null;
 		List<MasResDTO> resList=new ArrayList<>();
-		
+		Map<String,Object> qsMainSet=new HashMap();
 		List<Map<String,Object>> qsSet=new ArrayList<>();
 		
 		Map<String,Object> mainqsData=new HashMap<>();
@@ -222,11 +224,13 @@ public class MasterService {
 				String[] tdata=tokenservice.decodeJWT(authToken);
 				String uuid=tdata[1];
 				String role=tdata[0];
+				data4=masterrepo.getUserDataRepo(uuid);
+				data3=masterrepo.getExamNameRepo(model.getExam());
+				data5=masterrepo.getexamTypeDataRepo(model.getExamType());
 				String pid=randomAlphaNumeric(10);
 				model.setPaperid(pid);
 				List<Map<String,Object>> topicData=(List<Map<String, Object>>) model.getTopics();
-//				ObjectMapper mapper = new ObjectMapper();
-//				String topicJson = mapper.writeValueAsString(topicData);
+//				
 				
 				List<String> topicDataListraw=new ArrayList<>();
 				for (Map<String,Object> row : topicData) {
@@ -274,10 +278,27 @@ public class MasterService {
 						}
 //				       
 				}
-				System.out.println(qsSet);
+				
+				qsMainSet.put("examName", model.getExamName());
+				qsMainSet.put("examType", data5.get(0).get("pattern_type"));
+				qsMainSet.put("totalQs", model.getTotalQs());
+				qsMainSet.put("totalMarks",model.getTotalMarks());
+				qsMainSet.put("inst_name", data4.get(0).get("user_inst"));
+				qsMainSet.put("branch_name", data4.get(0).get("user_branch"));
+				qsMainSet.put("examDate", model.getExamDate());
+				qsMainSet.put("created_by", data4.get(0).get("user_name"));
+				qsMainSet.put("exam", data3.get(0).get("exam_name"));
+				qsMainSet.put("questions", qsSet);
+
+				ObjectMapper mapper = new ObjectMapper();
+				String paperJson = mapper.writeValueAsString(qsMainSet);
+//				.out.println(qsMainSet);
 				String[] topicDataList = topicData.stream()
 					    .map(row -> (String) row.get("topic"))
+					    .filter(Objects::nonNull)   // optional, in case of nulls
+					    .distinct()
 					    .toArray(String[]::new);
+
 
 //				System.out.println("----"+model.getSubject()+"----");
 				
@@ -301,7 +322,7 @@ public class MasterService {
 					model.setChapter(chapters);
 					model.setTopics(topicDataList);
 				}
-				data=masterrepo.savePaperRepo(uuid,model,topicDataList,"");
+				data=masterrepo.savePaperRepo(uuid,model,topicDataList,paperJson);
 				if(data>0) {
 			       
 					return response.AppResponse("Success", null,pid);
@@ -315,6 +336,37 @@ public class MasterService {
 		}
 	}
 	
+	public ResponseEntity<ApiResponses> getQsPaperService(CommonReqModel model, ResponseBean response, String authToken) throws Exception{
+		List<Map<String,Object>> data=null;
+		List<MasResDTO> resList=new ArrayList<>();
+		String rawJson="";
+		try {
+			if(authToken.isBlank() || authToken.isEmpty()) {
+				return response.AppResponse("Nulltype", null, null);
+			}
+			
+			if(!tokenservice.validateTokenAndReturnBool(authToken)) {
+				throw new GlobalExceptionHandler.ExpiredException();
+			}
+				
+//				System.out.println(role);
+				data=masterrepo.getQsPaperRepo(model.getPaper_id());
+				if(!data.isEmpty() && data!=null) {
+			       rawJson=data.get(0).get("paper_pdf").toString();
+			       ObjectMapper mapper = new ObjectMapper();
+			       JsonNode jsonNode = mapper.readTree(rawJson); // parse string back into JSON
+
+			       Map<String, Object> responseMap = new HashMap<>();
+			       responseMap.put("data", jsonNode);
+					return response.AppResponse("Success", null, responseMap);
+				}
+				else {
+					return response.AppResponse("Notfound", null, null);
+				}
+		}catch(Exception ex) {
+			throw ex;
+		}
+	}
 	
 	
 	

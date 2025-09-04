@@ -15,6 +15,7 @@ public class CommonReqModel {
 	
 	private String uuid;
 	private String paperid;
+	private String paper_id;
 	private String user_pwd;
 	private String token;
 	private Object subject;

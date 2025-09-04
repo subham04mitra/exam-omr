@@ -104,7 +104,7 @@ public class MasterRepository {
 			query="""
 					INSERT INTO emsadmin.paper_details
 				(exam_id, pat_id, paper_id, paper_name, sub_id, chap_id, topic_id, total_ques, total_marks, paper_pdf, created_by, created_at,exam_date)
-				VALUES(:exam, :exam_type, :paper_id, :exam_name, :subject, :chapter, :topic, :tot_qs, :tot_mrk, 'pdf', :uuid, now(),:exam_date);
+				VALUES(:exam, :exam_type, :paper_id, :exam_name, :subject, :chapter, :topic, :tot_qs, :tot_mrk, :pdf, :uuid, now(),:exam_date);
 				
 					""";
 //			System.out.println(model.getSubject());
@@ -121,7 +121,7 @@ public class MasterRepository {
 			params.put("subject", model.getSubject());
 			params.put("chapter", model.getChapter());
 			params.put("topic", model.getTopics());
-//			params.put("pdf", pdf);
+			params.put("pdf", pdf);
 			data=jdbctemplate.update(query, params);
 		}catch(Exception ex) {
 			ex.printStackTrace();
@@ -138,7 +138,7 @@ public class MasterRepository {
 		try {
 			
 			
-			System.out.println(id);
+//			System.out.println(id);
 			
 			query="""
 					SELECT a.* FROM emsadmin.ques_ans_details AS a
@@ -148,7 +148,28 @@ public class MasterRepository {
 			params.put("id", id);
 			params.put("type", type);
 			params.put("count", count);
-//			System.out.println(params);
+			System.out.println(params);
+			data=jdbctemplate.queryForList(query, params);
+			System.out.println(data);
+		}
+		catch(Exception ex) {
+			throw ex;
+		}
+		return data;
+	}
+	
+public List<Map<String,Object>> getUserDataRepo(String id){
+		
+		List<Map<String,Object>> data=null;
+		String query="";
+		Map<String,Object> params=new HashMap<>();
+		try {
+			
+			
+			query="""
+					SELECT x.user_name,x.user_inst,x.user_branch  FROM masadmin.mas_user x where x.uuid =:id
+					""";
+			params.put("id", id);
 			data=jdbctemplate.queryForList(query, params);
 		}
 		catch(Exception ex) {
@@ -157,5 +178,69 @@ public class MasterRepository {
 		return data;
 	}
 	
+
+public List<Map<String,Object>> getexamTypeDataRepo(String id){
 	
+	List<Map<String,Object>> data=null;
+	String query="";
+	Map<String,Object> params=new HashMap<>();
+	try {
+		
+		
+		query="""
+				SELECT x.pattern_type  FROM masadmin.mas_exam_pattern x where x.pat_id =:id
+				""";
+		params.put("id", id);
+		data=jdbctemplate.queryForList(query, params);
+	}
+	catch(Exception ex) {
+		throw ex;
+	}
+	return data;
+}
+
+
+public List<Map<String,Object>> getExamNameRepo(String id){
+	
+	List<Map<String,Object>> data=null;
+	String query="";
+	Map<String,Object> params=new HashMap<>();
+	try {
+		
+		
+		query="""
+				SELECT x.exam_name  FROM masadmin.mas_exam1 x where x.exam_id =:id 
+				""";
+		params.put("id", id);
+		data=jdbctemplate.queryForList(query, params);
+	}
+	catch(Exception ex) {
+		throw ex;
+	}
+	return data;
+}
+
+
+public List<Map<String,Object>> getQsPaperRepo(String id){
+	
+	List<Map<String,Object>> data=null;
+	String query="";
+	Map<String,Object> params=new HashMap<>();
+	try {
+		
+		
+		query="""
+				SELECT x.paper_pdf FROM emsadmin.paper_details x where x.paper_id =:id 
+				""";
+		params.put("id", id);
+		System.out.println(params);
+		data=jdbctemplate.queryForList(query, params);
+		System.out.println(data);
+	}
+	catch(Exception ex) {
+		throw ex;
+	}
+	return data;
+}
+
 }
