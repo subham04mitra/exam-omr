@@ -14,15 +14,16 @@ public class CommonReqModel {
 
 	
 	private String uuid;
+	private String paperid;
 	private String user_pwd;
 	private String token;
-	private String subject;
-	private String chapter;
+	private Object subject;
+	private Object chapter;
 	private String examName;
 	private String duration;
 	private String examDate;
-	private String totalMarks;
-	private String totalQs;
+	private int totalMarks;
+	private int totalQs;
 	private String exam;
 	private String examType;
 	private Object topics;

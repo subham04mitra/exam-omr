@@ -29,11 +29,28 @@ public class MasterController {
 	MasterService masservice;
 	ResponseBean responseBean=new ResponseBean();
 	@GetMapping("/exam-type")
-public ResponseEntity<?> test(@RequestHeader("Authorization") String authorizationHeader){
+public ResponseEntity<?> getexamType(@RequestHeader("Authorization") String authorizationHeader){
 		
-		return new ResponseEntity<>(Map.of("Message","Success","data",List.of("Full Exam", "Subject Wise", "Chapter Wise")),HttpStatus.OK);		
-
+//		return new ResponseEntity<>(Map.of("Message","Success","data",List.of("Full Exam", "Subject Wise", "Chapter Wise")),HttpStatus.OK);		
+		String authToken = authorizationHeader.split(" ")[1];
+		ResponseEntity<ApiResponses> finalResponse;
+		
+		finalResponse=masservice.getExamTypeService(responseBean,authToken);
+		
+		return finalResponse;
 	}
+	
+	@GetMapping("/exam-name")
+	public ResponseEntity<?> getexamName(@RequestHeader("Authorization") String authorizationHeader){
+			
+//			return new ResponseEntity<>(Map.of("Message","Success","data",List.of("Full Exam", "Subject Wise", "Chapter Wise")),HttpStatus.OK);		
+			String authToken = authorizationHeader.split(" ")[1];
+			ResponseEntity<ApiResponses> finalResponse;
+			
+			finalResponse=masservice.getExamNameService(responseBean,authToken);
+			
+			return finalResponse;
+		}
 	
 	@GetMapping("/subjects")
 	public ResponseEntity<?> getSubject(@RequestHeader("Authorization") String authorizationHeader){
@@ -70,7 +87,7 @@ public ResponseEntity<?> test(@RequestHeader("Authorization") String authorizati
 
 		}
 	@PostMapping("/save-paper")
-	public ResponseEntity<?> test4(@RequestBody CommonReqModel model,@RequestHeader("Authorization") String authorizationHeader){
+	public ResponseEntity<?> savePaper(@RequestBody CommonReqModel model,@RequestHeader("Authorization") String authorizationHeader) throws Exception{
 			
 		String authToken = authorizationHeader.split(" ")[1];
 		ResponseEntity<ApiResponses> finalResponse;
