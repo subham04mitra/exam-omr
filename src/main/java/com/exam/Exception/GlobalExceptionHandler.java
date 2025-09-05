@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now());
         response.put("error", "Statement Error");
-//        response.put("message", ex.getMessage());
+        response.put("message", ex.getMessage());
         response.put("status", HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now());
         response.put("error", "Parameter mismatch");
-//        response.put("message", ex.getMessage());
+        response.put("message", ex.getMessage());
         response.put("status", HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now());
         response.put("error", "Application Error");
-//        response.put("message", ex.getMessage());
+        response.put("message", ex.getMessage());
         response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -67,7 +67,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now());
         response.put("error", "Internal Server Error");
-//        response.put("message", ex.getMessage());
+        response.put("message", ex.getMessage());
         response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -101,7 +101,7 @@ public class GlobalExceptionHandler {
    public ResponseEntity<Object> handleDatabaseDown(GlobalExceptionHandler.DatabaseUnavailableException ex) {
        Map<String, Object> body = new HashMap<>();
        body.put("error", "Database Unavailable");
-//       body.put("message", ex.getMessage());
+       body.put("message", ex.getMessage());
        body.put("timestamp", LocalDateTime.now());
        return new ResponseEntity<>(body, HttpStatus.SERVICE_UNAVAILABLE);
    }

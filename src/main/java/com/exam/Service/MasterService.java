@@ -1,7 +1,10 @@
 package com.exam.Service;
 
 import java.security.SecureRandom;
+import java.sql.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +22,7 @@ import com.exam.Security.TokenService;
 import com.exam.reqDTO.CommonReqModel;
 import com.exam.resDTO.DashResModel;
 import com.exam.resDTO.MasResDTO;
+import com.exam.resDTO.QsPaperListModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -50,7 +54,8 @@ public class MasterService {
 						MasResDTO res=new MasResDTO();
 						res.setName(row.get("subject_name").toString());
 						res.setId(row.get("sub_id").toString());
-						res.setAvailableQs(0);
+						List<Map<String,Object>> data2=masterrepo.getavlQsRepo(row.get("sub_id").toString());
+						res.setAvailableQs(data2);
 						resList.add(res);
 					}
 					
@@ -155,7 +160,8 @@ public class MasterService {
 						MasResDTO res=new MasResDTO();
 						res.setName(row.get("chapter_name").toString());
 						res.setId(row.get("chap_id").toString());
-						res.setAvailableQs(0);
+						List<Map<String,Object>> data2=masterrepo.getavlQsRepo(row.get("chap_id").toString());
+						res.setAvailableQs(data2);
 						resList.add(res);
 					}
 					
@@ -190,7 +196,8 @@ public class MasterService {
 						MasResDTO res=new MasResDTO();
 						res.setName(row.get("topic_name").toString());
 						res.setId(row.get("topic_id").toString());
-						res.setAvailableQs(0);
+						List<Map<String,Object>> data2=masterrepo.getavlQsRepo(row.get("topic_id").toString());
+						res.setAvailableQs(data2);
 						resList.add(res);
 					}
 					
@@ -205,11 +212,12 @@ public class MasterService {
 	}
 	
 	public ResponseEntity<ApiResponses> savePaperService(CommonReqModel model, ResponseBean response, String authToken) throws Exception{
-		int data=0;
+		int data=0,data6=0;
 		List<Map<String,Object>> data2=null,data3=null,data4=null,data5=null;
 		List<MasResDTO> resList=new ArrayList<>();
 		Map<String,Object> qsMainSet=new HashMap();
 		List<Map<String,Object>> qsSet=new ArrayList<>();
+		List<String> ansSet=new ArrayList<>();
 		
 		Map<String,Object> mainqsData=new HashMap<>();
 		int qsid=1;
@@ -246,7 +254,7 @@ public class MasterService {
 				          for (Map<String,Object> row1 : data2) {
 				        	List<Map<String,Object>> optionSet=new ArrayList<>();
 							optionSet.clear();
-				        	  			        	  
+				        	  ansSet.add((String) row1.get("correct_ans"));  
 				        	  Map<String, Object> optnRowA = new HashMap<>();
 				        	  optnRowA.put("text", row1.get("option_a"));
 				        	  optnRowA.put("label", "A");
@@ -282,6 +290,7 @@ public class MasterService {
 				qsMainSet.put("examName", model.getExamName());
 				qsMainSet.put("examType", data5.get(0).get("pattern_type"));
 				qsMainSet.put("totalQs", model.getTotalQs());
+				qsMainSet.put("duration", model.getDuration());
 				qsMainSet.put("totalMarks",model.getTotalMarks());
 				qsMainSet.put("inst_name", data4.get(0).get("user_inst"));
 				qsMainSet.put("branch_name", data4.get(0).get("user_branch"));
@@ -323,12 +332,14 @@ public class MasterService {
 					model.setTopics(topicDataList);
 				}
 				data=masterrepo.savePaperRepo(uuid,model,topicDataList,paperJson);
-				if(data>0) {
-			       
+				String[] ansArray = ansSet.stream().toArray(String[]::new);
+				data6=masterrepo.saveAnsSheetRepo(uuid, ansArray, pid);
+				if(data>0 & data6>0) {
+					
 					return response.AppResponse("Success", null,pid);
 				}
 				else {
-					return response.AppResponse("Notfound", null, null);
+					return response.AppResponse("Error", null, null);
 				}
 		}catch(Exception ex) {
 			ex.printStackTrace();
@@ -368,7 +379,69 @@ public class MasterService {
 		}
 	}
 	
-	
+	public ResponseEntity<ApiResponses> getQsPaperListService( ResponseBean response, String authToken) throws Exception{
+		List<Map<String,Object>> data=null;
+		List<QsPaperListModel> resList=new ArrayList<>();
+//		String rawJson="";
+		try {
+			if(authToken.isBlank() || authToken.isEmpty()) {
+				return response.AppResponse("Nulltype", null, null);
+			}
+			
+			if(!tokenservice.validateTokenAndReturnBool(authToken)) {
+				throw new GlobalExceptionHandler.ExpiredException();
+			}
+			String[] tdata=tokenservice.decodeJWT(authToken);
+			String uuid=tdata[1];
+			String role=tdata[0];
+//				System.out.println(role);
+				data=masterrepo.getQsPaperListRepo(uuid,role);
+				if(!data.isEmpty() && data!=null) {
+					for (Map<String, Object> row : data) {
+						QsPaperListModel paper=new QsPaperListModel();
+						paper.setPaper_id(row.get("paper_id").toString());
+						paper.setPaper_name(row.get("paper_name").toString());
+						paper.setExam_name(row.get("exam_name").toString());
+						paper.setExam_type(row.get("pattern_type").toString());
+						paper.setUser_name(row.get("user_name").toString());
+						paper.setBranch(row.get("user_branch").toString());
+						Array subjectArray = (Array) row.get("subjects");
+						if (subjectArray != null) {
+						    paper.setSubject(Arrays.asList((String[]) subjectArray.getArray()));
+						} else {
+						    paper.setSubject(Collections.emptyList());
+						}
+
+						Array chapterArray = (Array) row.get("chapters");
+						if (chapterArray != null) {
+						    paper.setChapter(Arrays.asList((String[]) chapterArray.getArray()));
+						} else {
+						    paper.setChapter(Collections.emptyList());
+						}
+
+						Array topicArray = (Array) row.get("topics");
+						if (topicArray != null) {
+						    paper.setTopic(Arrays.asList((String[]) topicArray.getArray()));
+						} else {
+						    paper.setTopic(Collections.emptyList());
+						}
+
+						paper.setTot_mrks((int) row.get("total_ques"));
+						paper.setTot_qs((int) row.get("total_marks"));
+						paper.setParer_duration((int) row.get("paper_duration"));
+						resList.add(paper);
+					}
+					
+					
+					return response.AppResponse("Success", null, resList);
+				}
+				else {
+					return response.AppResponse("Notfound", null, null);
+				}
+		}catch(Exception ex) {
+			throw ex;
+		}
+	}
 	
 	private static final String ALPHA_NUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();

@@ -109,4 +109,17 @@ public ResponseEntity<?> getexamType(@RequestHeader("Authorization") String auth
 
 		
 		}
+	
+	
+	@GetMapping("/get-paper-list")
+	public ResponseEntity<?> getPaperList(@RequestHeader("Authorization") String authorizationHeader) throws Exception{
+		String authToken = authorizationHeader.split(" ")[1];
+		ResponseEntity<ApiResponses> finalResponse;
+		
+		finalResponse=masservice.getQsPaperListService(responseBean,authToken);
+		
+		return finalResponse;		
+
+		
+		}
 }

@@ -103,8 +103,10 @@ public class MasterRepository {
 //			System.out.println(uuid+jwt);
 			query="""
 					INSERT INTO emsadmin.paper_details
-				(exam_id, pat_id, paper_id, paper_name, sub_id, chap_id, topic_id, total_ques, total_marks, paper_pdf, created_by, created_at,exam_date)
-				VALUES(:exam, :exam_type, :paper_id, :exam_name, :subject, :chapter, :topic, :tot_qs, :tot_mrk, :pdf, :uuid, now(),:exam_date);
+				(exam_id, pat_id, paper_id, paper_name, sub_id, chap_id, topic_id, total_ques, total_marks,
+				 paper_pdf, created_by, created_at,exam_date,paper_duration)
+				VALUES(:exam, :exam_type, :paper_id, :exam_name, :subject, :chapter, :topic, :tot_qs, :tot_mrk,
+				 :pdf, :uuid, now(),:exam_date,:duration);
 				
 					""";
 //			System.out.println(model.getSubject());
@@ -115,6 +117,7 @@ public class MasterRepository {
 			params.put("paper_id", model.getPaperid());
 			params.put("tot_qs", Integer.valueOf(model.getTotalQs()));
 			params.put("tot_mrk", Integer.valueOf(model.getTotalMarks()));
+			params.put("duration", Integer.valueOf(model.getDuration()));
 			params.put("exam_name", model.getExamName());
 			params.put("exam_date",java.sql.Date.valueOf(model.getExamDate()) );
 			params.put("exam_type", model.getExamType());
@@ -148,9 +151,9 @@ public class MasterRepository {
 			params.put("id", id);
 			params.put("type", type);
 			params.put("count", count);
-			System.out.println(params);
+//			System.out.println(params);
 			data=jdbctemplate.queryForList(query, params);
-			System.out.println(data);
+//			System.out.println(data);
 		}
 		catch(Exception ex) {
 			throw ex;
@@ -233,14 +236,186 @@ public List<Map<String,Object>> getQsPaperRepo(String id){
 				SELECT x.paper_pdf FROM emsadmin.paper_details x where x.paper_id =:id 
 				""";
 		params.put("id", id);
-		System.out.println(params);
+//		System.out.println(params);
 		data=jdbctemplate.queryForList(query, params);
-		System.out.println(data);
+//		System.out.println(data);
 	}
 	catch(Exception ex) {
 		throw ex;
 	}
 	return data;
 }
+
+
+public List<Map<String,Object>> getQsPaperListRepo(String id,String type){
+	
+	List<Map<String,Object>> data=null;
+	String query="";
+	Map<String,Object> params=new HashMap<>();
+	try {
+		
+		if("admin".equalsIgnoreCase(type)) {
+			query="""
+					
+					SELECT 
+				    x.paper_id,
+				    x.paper_name,
+				    me.exam_name,
+				    mep.pattern_type ,
+				    x.total_ques ,
+				    x.total_marks ,
+				    x.paper_duration ,
+				   	mu.user_name ,
+				   	mu.user_branch, 
+				    Date(x.created_at) ,
+				    array_agg(DISTINCT sd.subject_name) AS subjects,
+				    array_agg(DISTINCT cd.chapter_name) AS chapters,
+				    array_agg(DISTINCT td.topic_name) AS topics
+				FROM emsadmin.paper_details x
+				join masadmin.mas_user mu on x.created_by =mu."uuid" 
+				JOIN masadmin.mas_exam1 me ON x.exam_id = me.exam_id
+				JOIN masadmin.mas_exam_pattern mep ON x.pat_id = mep.pat_id
+				LEFT JOIN LATERAL unnest(x.sub_id) AS s(sub_id) ON true
+				LEFT JOIN emsadmin.subject_details sd ON sd.sub_id = s.sub_id
+				LEFT JOIN LATERAL unnest(x.chap_id) AS c(chap_id) ON true
+				LEFT JOIN emsadmin.chapter_details cd ON cd.chap_id = c.chap_id
+				LEFT JOIN LATERAL unnest(x.topic_id) AS t(topic_id) ON true
+				LEFT JOIN emsadmin.topic_details td ON td.topic_id = t.topic_id
+				where mu.admin_id =:id or mu."uuid" =:id
+				GROUP BY x.paper_id, x.paper_name, me.exam_name
+				, mep.pattern_type,mu.user_name,mu.user_branch ;
+	 
+					""";
+		}
+		else if("owner".equalsIgnoreCase(type)) {
+			query="""
+					
+					SELECT 
+				    x.paper_id,
+				    x.paper_name,
+				    me.exam_name,
+				    mep.pattern_type ,
+				    x.total_ques ,
+				    x.total_marks ,
+				    x.paper_duration ,
+				   	mu.user_name ,
+				   	mu.user_branch, 
+				    Date(x.created_at) ,
+				    array_agg(DISTINCT sd.subject_name) AS subjects,
+				    array_agg(DISTINCT cd.chapter_name) AS chapters,
+				    array_agg(DISTINCT td.topic_name) AS topics
+				FROM emsadmin.paper_details x
+				join masadmin.mas_user mu on x.created_by =mu."uuid" 
+				JOIN masadmin.mas_exam1 me ON x.exam_id = me.exam_id
+				JOIN masadmin.mas_exam_pattern mep ON x.pat_id = mep.pat_id
+				LEFT JOIN LATERAL unnest(x.sub_id) AS s(sub_id) ON true
+				LEFT JOIN emsadmin.subject_details sd ON sd.sub_id = s.sub_id
+				LEFT JOIN LATERAL unnest(x.chap_id) AS c(chap_id) ON true
+				LEFT JOIN emsadmin.chapter_details cd ON cd.chap_id = c.chap_id
+				LEFT JOIN LATERAL unnest(x.topic_id) AS t(topic_id) ON true
+				LEFT JOIN emsadmin.topic_details td ON td.topic_id = t.topic_id
+				where mu.owner_id =:id
+				GROUP BY x.paper_id, x.paper_name, me.exam_name
+				, mep.pattern_type,mu.user_name,mu.user_branch ;
+	 
+					""";
+		}
+		else if("teacher".equalsIgnoreCase(type)) {
+			query="""
+					
+					SELECT 
+				    x.paper_id,
+				    x.paper_name,
+				    me.exam_name,
+				    mep.pattern_type ,
+				    x.total_ques ,
+				    x.total_marks ,
+				    x.paper_duration ,
+				   	mu.user_name ,
+				   	mu.user_branch, 
+				    Date(x.created_at) ,
+				    array_agg(DISTINCT sd.subject_name) AS subjects,
+				    array_agg(DISTINCT cd.chapter_name) AS chapters,
+				    array_agg(DISTINCT td.topic_name) AS topics
+				FROM emsadmin.paper_details x
+				join masadmin.mas_user mu on x.created_by =mu."uuid" 
+				JOIN masadmin.mas_exam1 me ON x.exam_id = me.exam_id
+				JOIN masadmin.mas_exam_pattern mep ON x.pat_id = mep.pat_id
+				LEFT JOIN LATERAL unnest(x.sub_id) AS s(sub_id) ON true
+				LEFT JOIN emsadmin.subject_details sd ON sd.sub_id = s.sub_id
+				LEFT JOIN LATERAL unnest(x.chap_id) AS c(chap_id) ON true
+				LEFT JOIN emsadmin.chapter_details cd ON cd.chap_id = c.chap_id
+				LEFT JOIN LATERAL unnest(x.topic_id) AS t(topic_id) ON true
+				LEFT JOIN emsadmin.topic_details td ON td.topic_id = t.topic_id
+				where mu."uuid" =:id
+				GROUP BY x.paper_id, x.paper_name, me.exam_name
+				, mep.pattern_type,mu.user_name,mu.user_branch ;
+	 
+					""";
+			
+		}
+		
+		
+		params.put("id", id);
+//		System.out.println(params);
+		data=jdbctemplate.queryForList(query, params);
+//		System.out.println(data);
+	}
+	catch(Exception ex) {
+		throw ex;
+	}
+	return data;
+}
+
+
+public List<Map<String,Object>> getavlQsRepo(String id){
+	
+	List<Map<String,Object>> data=null;
+	String query="";
+	Map<String,Object> params=new HashMap<>();
+	try {
+		
+		
+		query="""
+				SELECT x.ques_type ,count(1) FROM emsadmin.ques_ans_details x 
+				where (x.sub_id =:id or x.chap_id =:id or x.topic_id =:id) group by x.ques_type """;
+		params.put("id", id);
+//		System.out.println(params);
+		data=jdbctemplate.queryForList(query, params);
+//		System.out.println(data);
+	}
+	catch(Exception ex) {
+		throw ex;
+	}
+	return data;
+}
+
+
+public int saveAnsSheetRepo(String uuid,String[] ans,String paper_id){
+	int data=0;
+	Map<String,Object> params=new HashMap<>();
+	String query="";
+	try {
+//		System.out.println(uuid+jwt);
+		query="""
+				INSERT INTO emsadmin.answer_details
+				(paper_id, ques_id, answer, positive_marks, negetive_marks, created_by, created_at)
+				VALUES(:paper_id, '', :ans, 0, 0, :uuid, now());
+				""";
+//		System.out.println(model.getSubject());
+//		System.out.println(model.getChapter());
+//		System.out.println(model.getTopics());
+		params.put("uuid", uuid);
+		params.put("paper_id", paper_id);
+		params.put("ans", ans);
+		
+		data=jdbctemplate.update(query, params);
+	}catch(Exception ex) {
+		ex.printStackTrace();
+			throw ex;
+		}
+	return data;
+}
+
 
 }
