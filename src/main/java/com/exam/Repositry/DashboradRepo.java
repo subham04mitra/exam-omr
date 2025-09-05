@@ -24,14 +24,17 @@ public class DashboradRepo {
 			if("Admin".equalsIgnoreCase(type)) {
 				query="""
 						SELECT sum(x.teacher) as teacher,sum(x.paper_generated) as papers,sum(x.omr_scan) as scans,
-						sum(x.avg_marks)/count(1) as avg_marks 
+						sum(x.avg_marks)/count(1) as avg_marks, 
+						(select count(distinct user_branch) from masadmin.mas_user mu 
+						where admin_id =:uuid or "uuid" =:uuid) as tot_branch
 						FROM masadmin.dashboard_data x,masadmin.mas_user mu
 						where x.inst=mu.user_inst and mu."uuid"=:uuid
 						""";
 			}
 			else if("Owner".equalsIgnoreCase(type)) {
 				query="""
-					SELECT x.teacher ,x.paper_generated as papers,x.omr_scan as scans,x.avg_marks 
+					SELECT x.teacher ,x.paper_generated as papers,x.omr_scan as scans,
+					x.avg_marks , 1 as tot_branch
 					FROM masadmin.dashboard_data x,masadmin.mas_user mu
 					where x.inst=mu.user_inst and mu."uuid"=:uuid and x.branch =mu.user_branch
 					""";
@@ -52,4 +55,26 @@ public class DashboradRepo {
 		return data;
 	}
 	
+	
+	
+	public List<Map<String,Object>> getTotQsRepo(){
+		List<Map<String,Object>> data=null;
+		String query="";
+		Map<String,Object> params=new HashMap<>();
+		try {
+			
+			query="select count(1) from emsadmin.ques_ans_details qad where qad.active_yn ='Y'";
+			
+			
+			data=jdbctemplate.queryForList(query, params);
+		}catch(Exception ex) {
+			throw ex;
+		}
+		return data;
+	}
+	
+
+
+
 }
+

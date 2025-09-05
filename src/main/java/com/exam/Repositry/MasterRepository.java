@@ -170,7 +170,8 @@ public List<Map<String,Object>> getUserDataRepo(String id){
 			
 			
 			query="""
-					SELECT x.user_name,x.user_inst,x.user_branch  FROM masadmin.mas_user x where x.uuid =:id
+					SELECT x.user_name,x.user_inst,x.user_branch,x."uuid",x.admin_id,x.owner_id
+					  FROM masadmin.mas_user x where x.uuid =:id
 					""";
 			params.put("id", id);
 			data=jdbctemplate.queryForList(query, params);
@@ -416,6 +417,89 @@ public int saveAnsSheetRepo(String uuid,String[] ans,String paper_id){
 		}
 	return data;
 }
+public int saveUserRepo(String owner,CommonReqModel model,String admin,String uuid){
+	int data=0;
+	
+	Map<String,Object> params=new HashMap<>();
+	String query="";
+	try {
+//		System.out.println(uuid+jwt);
+		query="""
+				INSERT INTO masadmin.mas_user
+				("uuid", user_pwd, user_name, user_role, user_inst, user_branch, active_flag,
+				 entry_ts, entry_by, user_email, user_mobile, owner_id, admin_id)
+				VALUES(:id, :pwd, :name, :role, :inst, :branch, 'Y',
+				 now(), :uuid, :email, :mobile, :owner, :admin);
+			
+				""";
+//		System.out.println(model.getSubject());
+//		System.out.println(model.getChapter());
+//		System.out.println(model.getTopics());
+		params.put("id",model.getId().toString() );
+		params.put("pwd", model.getPwd());
+		params.put("name", model.getName());
+		params.put("role", model.getRole());
+		params.put("inst", model.getInst());
+		params.put("branch", model.getBranch());
+		params.put("uuid", uuid);
+		params.put("email",model.getEmail() );
+		params.put("mobile",model.getMobile());
+		params.put("owner",owner);
+		params.put("admin",admin);
+		
+		data=jdbctemplate.update(query, params);
+	}catch(Exception ex) {
+		ex.printStackTrace();
+			throw ex;
+		}
+	return data;
+}
+
+
+public List<Map<String,Object>> getOwnerDataRepo(String id){
+	
+	List<Map<String,Object>> data=null;
+	String query="";
+	Map<String,Object> params=new HashMap<>();
+	try {
+		
+		
+		query="""
+				select mu.user_name,mu."uuid",mu.user_branch from masadmin.mas_user mu 
+				where mu.admin_id =:id and mu.user_role ='OWNER'
+				""";
+		params.put("id", id);
+		data=jdbctemplate.queryForList(query, params);
+	}
+	catch(Exception ex) {
+		throw ex;
+	}
+	return data;
+}
+
+public List<Map<String,Object>> checkUserIdRepo(String id){
+	
+	List<Map<String,Object>> data=null;
+	String query="";
+	Map<String,Object> params=new HashMap<>();
+	try {
+		
+		
+		query="""
+				select * from masadmin.mas_user mu where mu."uuid" =:id
+				""";
+		params.put("id", id);
+//		System.out.println(params);
+		data=jdbctemplate.queryForList(query, params);
+	}
+	catch(Exception ex) {
+		throw ex;
+	}
+	return data;
+}
+
+
+
 
 
 }

@@ -443,6 +443,160 @@ public class MasterService {
 		}
 	}
 	
+	
+	public ResponseEntity<ApiResponses> saveUserService(CommonReqModel model,ResponseBean response, String authToken){
+		List<Map<String,Object>> data=null;
+		int data2=0;
+		List<MasResDTO> resList=new ArrayList<>();
+		try {
+			if(authToken.isBlank() || authToken.isEmpty()) {
+				return response.AppResponse("Nulltype", null, null);
+			}
+			
+			if(!tokenservice.validateTokenAndReturnBool(authToken)) {
+				throw new GlobalExceptionHandler.ExpiredException();
+			}
+				String[] tdata=tokenservice.decodeJWT(authToken);
+				String uuid=tdata[1];
+				String role=tdata[0];
+//				System.out.println(role);
+				data=masterrepo.getUserDataRepo(uuid);
+//				model.setBranch((String) data.get(0).get("user_branch"));
+				model.setInst((String) data.get(0).get("user_inst"));
+				if("admin".equalsIgnoreCase(role)) {
+					if("owner".equalsIgnoreCase(model.getRole())) {
+						data2=masterrepo.saveUserRepo("",model,uuid,uuid);
+					}
+					else if("teacher".equalsIgnoreCase(model.getRole())) {
+						data2=masterrepo.saveUserRepo(model.getOwner(),model,uuid,uuid);
+					}
+					else {
+						return response.AppResponse("Unauothorize", null, null);
+					}
+					
+				}
+				else if("owner".equalsIgnoreCase(role)) {
+					if("owner".equalsIgnoreCase(model.getRole())) {
+						data2=masterrepo.saveUserRepo(uuid,model,data.get(0).get("admin_id").toString(),uuid);
+					}
+					else {
+						return response.AppResponse("Unauothorize", null, null);
+					}
+					
+				}
+				else {
+					return response.AppResponse("Unauothorize", null, null);
+				}
+				
+				if(!data.isEmpty() && data!=null) {
+			       
+					
+					return response.AppResponse("Success", null, resList);
+				}
+				else {
+					return response.AppResponse("Notfound", null, null);
+				}
+		}catch(Exception ex) {
+			throw ex;
+		}
+	}
+	
+	public ResponseEntity<ApiResponses> getOwnerService(ResponseBean response, String authToken){
+		List<Map<String,Object>> data=null;
+		List<MasResDTO> resList=new ArrayList<>();
+		try {
+			if(authToken.isBlank() || authToken.isEmpty()) {
+				return response.AppResponse("Nulltype", null, null);
+			}
+			
+			if(!tokenservice.validateTokenAndReturnBool(authToken)) {
+				throw new GlobalExceptionHandler.ExpiredException();
+			}
+				String[] tdata=tokenservice.decodeJWT(authToken);
+				String uuid=tdata[1];
+				String role=tdata[0];
+//				System.out.println(role);
+				if("admin".equalsIgnoreCase(role)) {
+					data=masterrepo.getOwnerDataRepo(uuid);
+				}
+				else {
+					return response.AppResponse("Unauothorize", null, null);
+				}
+				
+				if(!data.isEmpty() && data!=null) {
+			        for (Map<String, Object> row : data) {
+						MasResDTO res=new MasResDTO();
+						res.setName(row.get("user_name").toString());
+						res.setId(row.get("uuid").toString());
+						res.setBranch(row.get("user_branch").toString());
+						
+						resList.add(res);
+					}
+					
+					return response.AppResponse("Success", null, resList);
+				}
+				else {
+					return response.AppResponse("Notfound", null, null);
+				}
+		}catch(Exception ex) {
+			throw ex;
+		}
+	}
+	
+	
+	public ResponseEntity<ApiResponses> checkUserIdService(CommonReqModel model,ResponseBean response, String authToken){
+		List<Map<String,Object>> data=null;
+		int data2=0;
+		List<MasResDTO> resList=new ArrayList<>();
+		try {
+			if(authToken.isBlank() || authToken.isEmpty()) {
+				return response.AppResponse("Nulltype", null, null);
+			}
+			
+			if(!tokenservice.validateTokenAndReturnBool(authToken)) {
+				throw new GlobalExceptionHandler.ExpiredException();
+			}
+				String[] tdata=tokenservice.decodeJWT(authToken);
+				String uuid=tdata[1];
+				String role=tdata[0];
+//				System.out.println(role);
+				data=masterrepo.checkUserIdRepo(model.getId());
+//				
+				if(!data.isEmpty() && data!=null) {
+			       
+					
+					return response.AppResponse("Notfound", null, null);
+				}
+				else {
+					return response.AppResponse("Success", null, null);
+				}
+		}catch(Exception ex) {
+			throw ex;
+		}
+	}
+	
+	public ResponseEntity<ApiResponses> checkTokenService(ResponseBean response, String authToken){
+		List<Map<String,Object>> data=null;
+		List<MasResDTO> resList=new ArrayList<>();
+		try {
+			if(authToken.isBlank() || authToken.isEmpty()) {
+				return response.AppResponse("Nulltype", null, null);
+			}
+			
+			if(!tokenservice.validateTokenAndReturnBool(authToken)) {
+				throw new GlobalExceptionHandler.ExpiredException();
+			}
+				
+					
+					return response.AppResponse("Success", null, null);
+			
+		}catch(Exception ex) {
+			throw ex;
+		}
+	}
+	
+	
+	
 	private static final String ALPHA_NUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
 

@@ -42,6 +42,10 @@ public class ResponseBean {
                 response.setCode("200");
                 response.setMessage("Logout Success"); 
                 return new ResponseEntity<>(response, HttpStatus.OK);
+            case "Unauothorize":
+                response.setCode("401");
+                response.setMessage("Unautorized"); 
+                return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
             case "Success":
                 response.setCode("200");
                 response.setMessage("Success");                

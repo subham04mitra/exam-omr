@@ -28,6 +28,16 @@ public class CommonReqModel {
 	private String exam;
 	private String examType;
 	private Object topics;
+	private String id;
+	private String pwd;
+	private String email;
+	private String mobile;
+	private String name;
+	private String role;
+	private String branch;
+	private String inst;
+	private String owner;
+	
 	
 	
 	

@@ -22,7 +22,7 @@ public class DashboardService {
 	@Autowired
 	TokenService tokenservice;
 	public ResponseEntity<ApiResponses> dashboardDynamicService(ResponseBean response, String authToken){
-		List<Map<String,Object>> data=null;
+		List<Map<String,Object>> data=null,data2=null;
 		DashResModel dashres=new DashResModel();
 		try {
 			if(authToken.isBlank() || authToken.isEmpty()) {
@@ -36,17 +36,22 @@ public class DashboardService {
 				String uuid=tdata[1];
 				String role=tdata[0];
 //				System.out.println(role);
+				data2=dashboardrepo.getTotQsRepo();
 				data=dashboardrepo.dashboradDynamicRepo(uuid, role);
 				if(!data.isEmpty() && data!=null) {
 					if("Teacher".equalsIgnoreCase(role)) {
 						dashres.setTot_paper(data.get(0).get("papers"));
 						dashres.setTot_scan(data.get(0).get("scans"));
+						dashres.setTot_ques(data2.get(0).get("count"));
 					}
 					else {
+//						System.out.println(data.get(0).get("tot_branch"));
 						dashres.setTot_paper(data.get(0).get("papers"));
 						dashres.setTot_scan(data.get(0).get("scans"));
 						dashres.setTot_teacher(data.get(0).get("teacher"));
 						dashres.setAvg_marks(data.get(0).get("avg_marks"));
+						dashres.setTot_branch(data.get(0).get("tot_branch"));
+						dashres.setTot_ques(data2.get(0).get("count"));
 					}
 					return response.AppResponse("Success", null, dashres);
 				}

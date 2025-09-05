@@ -122,4 +122,55 @@ public ResponseEntity<?> getexamType(@RequestHeader("Authorization") String auth
 
 		
 		}
+	
+	
+	
+	@PostMapping("/save-user")
+	public ResponseEntity<?> saveUser(@RequestBody CommonReqModel model,@RequestHeader("Authorization") String authorizationHeader) throws Exception{
+		String authToken = authorizationHeader.split(" ")[1];
+		ResponseEntity<ApiResponses> finalResponse;
+		
+		finalResponse=masservice.saveUserService(model,responseBean,authToken);
+		
+		return finalResponse;		
+
+		
+		}
+	
+	
+	@GetMapping("/auth")
+	public ResponseEntity<?> checkToken(@RequestHeader("Authorization") String authorizationHeader) throws Exception{
+		String authToken = authorizationHeader.split(" ")[1];
+		ResponseEntity<ApiResponses> finalResponse;
+		
+		finalResponse=masservice.checkTokenService(responseBean,authToken);
+		
+		return finalResponse;		
+
+		
+		}
+	@GetMapping("/get-owners")
+	public ResponseEntity<?> getOwners(@RequestHeader("Authorization") String authorizationHeader) throws Exception{
+		String authToken = authorizationHeader.split(" ")[1];
+		ResponseEntity<ApiResponses> finalResponse;
+		
+		finalResponse=masservice.getOwnerService(responseBean,authToken);
+		
+		return finalResponse;		
+
+		
+		}
+	
+	@PostMapping("/check-user")
+	public ResponseEntity<?> checkUser(@RequestBody CommonReqModel model,@RequestHeader("Authorization") String authorizationHeader) throws Exception{
+		String authToken = authorizationHeader.split(" ")[1];
+		ResponseEntity<ApiResponses> finalResponse;
+		
+		finalResponse=masservice.checkUserIdService(model,responseBean,authToken);
+		
+		return finalResponse;		
+
+		
+		}
+	
 }

@@ -16,4 +16,6 @@ public class DashResModel {
 	private Object tot_paper;
 	private Object tot_scan;
 	private Object avg_marks;
+	private Object tot_branch;
+	private Object tot_ques;
 }

@@ -14,5 +14,6 @@ public class MasResDTO {
 
 	private String name;
 	private String id;
+	private String branch;
 	private Object availableQs;
 }

@@ -13,7 +13,7 @@ import com.exam.Response.ResponseBean;
 import com.exam.Service.DashboardService;
 
 @RestController
-@RequestMapping("/api/dash")
+@RequestMapping("/api/mas")
 public class DashboradController {
 
 	@Autowired
@@ -22,8 +22,8 @@ public class DashboradController {
 	ResponseBean responseBean=new ResponseBean();
 	
 	
-	@GetMapping
-	public ResponseEntity<ApiResponses> refreshTokenController(@RequestHeader("Authorization") String authorizationHeader){
+	@GetMapping("/dash")
+	public ResponseEntity<ApiResponses> dashboardDynamic(@RequestHeader("Authorization") String authorizationHeader){
 		String authToken = authorizationHeader.split(" ")[1];
 		ResponseEntity<ApiResponses> finalResponse;
 		
