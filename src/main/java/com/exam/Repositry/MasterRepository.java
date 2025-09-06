@@ -104,9 +104,9 @@ public class MasterRepository {
 			query="""
 					INSERT INTO emsadmin.paper_details
 				(exam_id, pat_id, paper_id, paper_name, sub_id, chap_id, topic_id, total_ques, total_marks,
-				 paper_pdf, created_by, created_at,exam_date,paper_duration)
+				 paper_pdf, created_by, created_at,exam_date,paper_duration,each_mrk)
 				VALUES(:exam, :exam_type, :paper_id, :exam_name, :subject, :chapter, :topic, :tot_qs, :tot_mrk,
-				 :pdf, :uuid, now(),:exam_date,:duration);
+				 :pdf, :uuid, now(),:exam_date,:duration,:each_mrk);
 				
 					""";
 //			System.out.println(model.getSubject());
@@ -124,6 +124,7 @@ public class MasterRepository {
 			params.put("subject", model.getSubject());
 			params.put("chapter", model.getChapter());
 			params.put("topic", model.getTopics());
+			params.put("each_mrk", model.getEachMark());
 			params.put("pdf", pdf);
 			data=jdbctemplate.update(query, params);
 		}catch(Exception ex) {
@@ -499,7 +500,76 @@ public List<Map<String,Object>> checkUserIdRepo(String id){
 }
 
 
+public List<Map<String,Object>> getStudentDataRepo(String id){
+	
+	List<Map<String,Object>> data=null;
+	String query="";
+	Map<String,Object> params=new HashMap<>();
+	try {
+		
+		query="""
+				SELECT x.student_name,x.student_id,pd.total_ques ,pd.total_marks ,
+				x.tot_attempt ,x.tot_correct ,x.tot_wrong ,pd.each_mrk 
+			FROM emsadmin.student_data x,emsadmin.paper_details pd 
+			WHERE x.paper_id =:id and x.paper_id =pd.paper_id
+				""";
+		params.put("id", id);
+		data=jdbctemplate.queryForList(query, params);
+//		System.out.println(data);
+	}
+	catch(Exception ex) {
+		throw ex;
+	}
+	return data;
+}
 
+public List<Map<String,Object>> getQsPaperListbycndRepo(String id,String type,CommonReqModel model){
+	
+	List<Map<String,Object>> data=null;
+	String query="";
+	Map<String,Object> params=new HashMap<>();
+	try {
+		
+		if("admin".equalsIgnoreCase(type)) {
+			query="""
+					select x.paper_name,x.exam_date,mu.user_name,mu.user_branch,x.paper_id
+					from emsadmin.paper_details x,masadmin.mas_user mu 
+					where x.exam_id =:exam and x.pat_id =:pat 
+					and mu."uuid" =x.created_by and (mu."uuid" =:id or mu.admin_id =:id)
+					""";
+		}
+		else if("owner".equalsIgnoreCase(type)) {
+			query="""
+					
+					select x.paper_name,x.exam_date,mu.user_name,mu.user_branch,x.paper_id
+					 from emsadmin.paper_details x,masadmin.mas_user mu 
+					where x.exam_id =:exam and x.pat_id =:pat 
+					and mu."uuid" =x.created_by and (mu."uuid" =:id' or mu.owner_id =:id')
+						 
+					""";
+		}
+		else if("teacher".equalsIgnoreCase(type)) {
+			query="""
+					select x.paper_name,x.exam_date,mu.,mu.user_branch,x.paper_id
+					 from emsadmin.paper_details x,masadmin.mas_user mu
+					where x.exam_id =:exam and pat_id =:pat and created_by =:id and mu."uuid" =x.created_by
+					""";
+			
+		}
+		
+		
+		params.put("id", id);
+		params.put("exam", model.getExam());
+		params.put("pat", model.getExamType());
+//		System.out.println(params);
+		data=jdbctemplate.queryForList(query, params);
+//		System.out.println(data);
+	}
+	catch(Exception ex) {
+		throw ex;
+	}
+	return data;
+}
 
 
 }

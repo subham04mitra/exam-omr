@@ -1,5 +1,7 @@
 package com.exam.resDTO;
 
+import java.sql.Date;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.AllArgsConstructor;
@@ -25,5 +27,6 @@ public class QsPaperListModel {
 	private Object subject;
 	private Object chapter;
 	private Object topic;
+	private Date exam_date;
 	
 }

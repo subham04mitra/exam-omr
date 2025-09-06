@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.exam.Repositry.MasterRepository;
 import com.exam.Response.ApiResponses;
@@ -173,4 +175,45 @@ public ResponseEntity<?> getexamType(@RequestHeader("Authorization") String auth
 		
 		}
 	
+	
+	@PostMapping("/get-marks")
+	public ResponseEntity<?> getStudentData(@RequestBody CommonReqModel model,@RequestHeader("Authorization") String authorizationHeader) throws Exception{
+		String authToken = authorizationHeader.split(" ")[1];
+		ResponseEntity<ApiResponses> finalResponse;
+		
+		finalResponse=masservice.getStudentDataService(model,responseBean,authToken);
+		
+		return finalResponse;		
+
+		
+		}
+	
+	
+	@PostMapping("/upload")
+    public ResponseEntity<?> uploadOmr(
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader("Authorization") String authorizationHeader) throws Exception {
+
+        String authToken = authorizationHeader.split(" ")[1]; // Extract Bearer token
+
+        ResponseEntity<ApiResponses> finalResponse;
+
+        finalResponse = masservice.uploadOmrService(file, responseBean, authToken);
+
+        return finalResponse;
+    }
+	
+	
+	
+	@PostMapping("/get-paper-list-cnd")
+	public ResponseEntity<?> getPaperListbycnd(@RequestBody CommonReqModel model,@RequestHeader("Authorization") String authorizationHeader) throws Exception{
+		String authToken = authorizationHeader.split(" ")[1];
+		ResponseEntity<ApiResponses> finalResponse;
+		
+		finalResponse=masservice.getQsPaperListbycndService(model,responseBean,authToken);
+		
+		return finalResponse;		
+
+		
+		}
 }

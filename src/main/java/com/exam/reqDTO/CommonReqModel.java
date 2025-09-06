@@ -25,6 +25,7 @@ public class CommonReqModel {
 	private String examDate;
 	private int totalMarks;
 	private int totalQs;
+	private int eachMark;
 	private String exam;
 	private String examType;
 	private Object topics;

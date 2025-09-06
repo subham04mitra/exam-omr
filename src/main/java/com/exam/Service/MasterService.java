@@ -1,7 +1,11 @@
 package com.exam.Service;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
 import java.sql.Array;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,16 +17,19 @@ import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.exam.Exception.GlobalExceptionHandler;
 import com.exam.Repositry.MasterRepository;
 import com.exam.Response.ApiResponses;
 import com.exam.Response.ResponseBean;
 import com.exam.Security.TokenService;
+import com.exam.Util.OmrScanner;
 import com.exam.reqDTO.CommonReqModel;
 import com.exam.resDTO.DashResModel;
 import com.exam.resDTO.MasResDTO;
 import com.exam.resDTO.QsPaperListModel;
+import com.exam.resDTO.StudentDataModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,6 +40,8 @@ public class MasterService {
 	MasterRepository masterrepo;
 	@Autowired
 	TokenService tokenservice;
+	@Autowired
+	OmrScanner omrscan;
 	public ResponseEntity<ApiResponses> getSubjectService(ResponseBean response, String authToken){
 		List<Map<String,Object>> data=null;
 		List<MasResDTO> resList=new ArrayList<>();
@@ -595,6 +604,144 @@ public class MasterService {
 		}
 	}
 	
+	
+	public ResponseEntity<ApiResponses> getStudentDataService(CommonReqModel model ,ResponseBean response, String authToken) throws Exception{
+		List<Map<String,Object>> data=null;
+		List<StudentDataModel> resList=new ArrayList<>();
+//		String rawJson="";
+		try {
+			if(authToken.isBlank() || authToken.isEmpty()) {
+				return response.AppResponse("Nulltype", null, null);
+			}
+			
+			if(!tokenservice.validateTokenAndReturnBool(authToken)) {
+				throw new GlobalExceptionHandler.ExpiredException();
+			}
+			String[] tdata=tokenservice.decodeJWT(authToken);
+			String uuid=tdata[1];
+			String role=tdata[0];
+//				System.out.println(role);
+				data=masterrepo.getStudentDataRepo(model.getPaper_id());
+				if(!data.isEmpty() && data!=null) {
+					for (Map<String, Object> row : data) {
+						StudentDataModel student=new StudentDataModel();
+						student.setStudent_name(row.get("student_name").toString());
+						student.setStudent_roll(row.get("student_id").toString());
+						student.setTot_qs((int) row.get("total_ques"));
+						student.setTot_marks((int) row.get("total_marks"));
+						student.setTot_attm((int) row.get("tot_attempt"));
+						student.setTot_crct((int) row.get("tot_correct"));
+						student.setTot_wrng((int) row.get("tot_wrong"));
+						int crctMark=(int) row.get("tot_correct")*(int) row.get("each_mrk");
+						System.out.println(crctMark);
+						int wrngMrk=(int) ((int) row.get("tot_wrong")*0.33);
+						System.out.println(wrngMrk);
+						student.setMrk_obtn(crctMark-wrngMrk);
+						resList.add(student);
+					}
+					
+					
+					return response.AppResponse("Success", null, resList);
+				}
+				else {
+					return response.AppResponse("Notfound", null, null);
+				}
+		}catch(Exception ex) {
+			throw ex;
+		}
+	}
+	
+	
+	
+	public ResponseEntity<ApiResponses> getQsPaperListbycndService(CommonReqModel model, ResponseBean response, String authToken) throws Exception{
+		List<Map<String,Object>> data=null;
+		List<QsPaperListModel> resList=new ArrayList<>();
+//		String rawJson="";
+		try {
+			if(authToken.isBlank() || authToken.isEmpty()) {
+				return response.AppResponse("Nulltype", null, null);
+			}
+			
+			if(!tokenservice.validateTokenAndReturnBool(authToken)) {
+				throw new GlobalExceptionHandler.ExpiredException();
+			}
+			String[] tdata=tokenservice.decodeJWT(authToken);
+			String uuid=tdata[1];
+			String role=tdata[0];
+//				System.out.println(role);
+				data=masterrepo.getQsPaperListbycndRepo(uuid,role,model);
+				if(!data.isEmpty() && data!=null) {
+					for (Map<String, Object> row : data) {
+						QsPaperListModel paper=new QsPaperListModel();
+						paper.setPaper_name(row.get("paper_name").toString());
+						paper.setPaper_id(row.get("paper_id").toString());
+						paper.setExam_date((Date) row.get("exam_date"));
+						paper.setUser_name(row.get("user_name").toString());
+						paper.setBranch(row.get("user_branch").toString());
+						resList.add(paper);
+					}
+					
+					
+					return response.AppResponse("Success", null, resList);
+				}
+				else {
+					return response.AppResponse("Notfound", null, null);
+				}
+		}catch(Exception ex) {
+			throw ex;
+		}
+	}
+	
+	
+	public ResponseEntity<ApiResponses> uploadOmrService(MultipartFile file, ResponseBean response, String authToken) throws Exception {
+		try {
+			if (authToken == null || authToken.isBlank()) {
+				return response.AppResponse("Nulltype", null, null);
+			}
+
+			if (!tokenservice.validateTokenAndReturnBool(authToken)) {
+				throw new GlobalExceptionHandler.ExpiredException();
+			}
+
+	
+			if (file == null || file.isEmpty()) {
+				return response.AppResponse("FileMissing", null, null);
+			}
+
+			// Save to temp location
+			Path tempFile = Files.createTempFile("omr-", "-" + file.getOriginalFilename());
+			Files.copy(file.getInputStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
+
+
+			Map<Integer, String> studentAnswers = omrscan.scan(tempFile.toFile());
+
+			//  Get correct answers from DB
+
+
+
+			int score = 0;
+			Map<String, Object> resultMap = new HashMap<>();
+
+//			for (Map.Entry<Integer, String> entry : correctAnswers.entrySet()) {
+//				String studentAns = studentAnswers.get(entry.getKey());
+//				if (entry.getValue().equalsIgnoreCase(studentAns)) {
+//					score++;
+//				}
+//			}
+			System.out.println("score"+ score);
+			System.out.println("studentAnswers"+ studentAnswers);
+			resultMap.put("score", score);
+			resultMap.put("studentAnswers", studentAnswers);
+
+			Files.deleteIfExists(tempFile);
+
+
+			return response.AppResponse("Success", null, resultMap);
+
+		} catch (Exception ex) {
+			throw ex; // Will be handled by GlobalExceptionHandler
+		}
+	}
 	
 	
 	private static final String ALPHA_NUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
