@@ -267,20 +267,24 @@ public class MasterService {
 				        	  Map<String, Object> optnRowA = new HashMap<>();
 				        	  optnRowA.put("text", row1.get("option_a"));
 				        	  optnRowA.put("label", "A");
+				        	  optnRowA.put("type", row1.get("option_a_type"));
 				        	  optionSet.add(optnRowA);
 
 				        	  Map<String, Object> optnRowB = new HashMap<>();
 				        	  optnRowB.put("text", row1.get("option_b"));
 				        	  optnRowB.put("label", "B");
+				        	  optnRowB.put("type", row1.get("option_b_type"));
 				        	  optionSet.add(optnRowB);
 
 				        	  Map<String, Object> optnRowC = new HashMap<>();
 				        	  optnRowC.put("text", row1.get("option_c"));
 				        	  optnRowC.put("label", "C");
+				        	  optnRowC.put("type", row1.get("option_c_type"));
 				        	  optionSet.add(optnRowC);
 
 				        	  Map<String, Object> optnRowD = new HashMap<>();
 				        	  optnRowD.put("text", row1.get("option_d"));
+				        	  optnRowD.put("type", row1.get("option_d_type"));
 				        	  optnRowD.put("label", "D");
 				        	  optionSet.add(optnRowD);
 				        	  
