@@ -216,4 +216,36 @@ public ResponseEntity<?> getexamType(@RequestHeader("Authorization") String auth
 
 		
 		}
+	
+	
+	@PostMapping("/Get-Qs")
+	public ResponseEntity<?> getQs(@RequestHeader("Authorization") String authorizationHeader) {
+
+	    String authToken = authorizationHeader.split(" ")[1];
+
+	    // Hardcoded string array
+	    List<String> topics = Arrays.asList(
+	    		"What is Spring Boot?",
+	            "Explain Dependency Injection.",
+	            "What is the use of @Autowired?",
+	            "How does Spring Boot auto-configuration work?",
+	            "What is the difference between REST and SOAP?",
+	            "What is JPA and how does it work?",
+	            "Explain the Spring Bean lifecycle.",
+	            "What is the difference between @Component, @Service, @Repository?",
+	            "How does Spring Security handle authentication?",
+	            "What is the purpose of application.properties?"
+	    );
+
+	    // Build your custom response
+	    ApiResponses response = new ApiResponses();
+	    response.setCode("200");
+	    response.setMessage("Topics fetched successfully");
+	    response.setData(topics);   
+
+	    return ResponseEntity.ok(response);
+	}
+
+	
+	
 }
