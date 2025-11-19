@@ -56,6 +56,7 @@ public class AuthService {
 				return response.AppResponse("Notfound",null, null); 
 			}
 		}catch(Exception ex) {
+			ex.printStackTrace();
 			throw ex;
 		}
 		

@@ -30,6 +30,7 @@ public class AuthRepo {
 			params.put("pwd", pwd);
 			data=jdbctemplate.queryForList(query, params);
 		}catch(Exception ex) {
+			ex.printStackTrace();
 				throw ex;
 			}
 		return data;

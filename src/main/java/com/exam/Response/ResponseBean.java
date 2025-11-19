@@ -46,6 +46,10 @@ public class ResponseBean {
                 response.setCode("401");
                 response.setMessage("Unautorized"); 
                 return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+            case "TryAgain":
+                response.setCode("502");
+                response.setMessage("Try Again"); 
+                return new ResponseEntity<>(response, HttpStatus.BAD_GATEWAY);
             case "Success":
                 response.setCode("200");
                 response.setMessage("Success");                

@@ -1,5 +1,7 @@
 package com.exam.reqDTO;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.AllArgsConstructor;
@@ -38,7 +40,17 @@ public class CommonReqModel {
 	private String branch;
 	private String inst;
 	private String owner;
+	private String[] domain;
+	private String level;
+	 private List<QA> res;
 	
+	
+	
+	 @Data
+		public static class QA {
+		    private String question;
+		    private String answer;
+		}
 	
 	
 	
