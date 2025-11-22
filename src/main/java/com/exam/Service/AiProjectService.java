@@ -13,6 +13,7 @@ import com.exam.Repositry.MasterRepository;
 import com.exam.Response.ApiResponses;
 import com.exam.Response.ResponseBean;
 import com.exam.Security.TokenService;
+import com.exam.Util.GeminiService;
 import com.exam.Util.GetQuestionListGemini;
 import com.exam.reqDTO.CommonReqModel;
 import com.exam.resDTO.MasResDTO;
@@ -27,6 +28,8 @@ public class AiProjectService {
 	@Autowired
 	TokenService tokenservice;
 	
+	@Autowired
+	 GeminiService geminiService;
 	public ResponseEntity<ApiResponses> getQsListService(CommonReqModel model, ResponseBean response, String authToken){
 		List<String> data=null;
 		try {
@@ -45,7 +48,7 @@ public class AiProjectService {
 				String uuid=tdata[1];
 				String role=tdata[0];
 //				System.out.println(role);
-				data=GetQuestionListGemini.GetQsList(model.getLevel(), model.getDomain());
+				data=geminiService.askGeminiForQuestions(model.getLevel(), model.getDomain());
 				if(!data.isEmpty()) {
 					return response.AppResponse("Success", null, data);
 				}
@@ -85,7 +88,7 @@ public class AiProjectService {
 				}
 //				System.out.println(jsonText);
 				
-				data=GetQuestionListGemini.getInterviewFeedback(jsonText);
+				data=geminiService.getInterviewFeedback(jsonText);
 				if(!data.isEmpty()) {
 					return response.AppResponse("Success", null, data);
 				}

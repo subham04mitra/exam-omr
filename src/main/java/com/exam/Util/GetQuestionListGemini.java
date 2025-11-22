@@ -6,8 +6,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.genai.types.GenerateContentResponse;
+
 public class GetQuestionListGemini {
 
+	
+//	 public String askGemini(String prompt) {
+//	        try {
+//	            GenerateContentResponse response = geminiClient.models.generateContent(
+//	                MODEL_NAME,
+//	                prompt,
+//	                null 
+//	            );
+//	           
+//	            return response.text();
+//	        } catch (Exception ex) {
+//	            System.err.println("Gemini API Error: " + ex.getMessage());
+//	            ex.printStackTrace();
+//	            return "Error: Could not get response from Gemini API (" + ex.getMessage() + ")";
+//	        }
+//	    }
+	    
+	    
+	
 	public static List<String> GetQsList(String level,String[] domain){
 		
 		

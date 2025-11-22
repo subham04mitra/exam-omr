@@ -1,7 +1,10 @@
 package com.exam.Controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -12,6 +15,7 @@ import com.exam.Response.ApiResponses;
 import com.exam.Response.ResponseBean;
 import com.exam.Service.AiProjectService;
 import com.exam.Service.MasterService;
+import com.exam.Util.GeminiService;
 import com.exam.reqDTO.CommonReqModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +24,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RequestMapping("/api/ai")
 public class AiProjectController {
 
+	@Autowired
+	 GeminiService geminiService;
+
+	  
+	
 	@Autowired
 	AiProjectService aiservice;
 	ResponseBean responseBean=new ResponseBean();
@@ -50,4 +59,13 @@ public class AiProjectController {
 		return finalResponse;	
 
 		}
+	
+//	@GetMapping("/ask")
+//	 public List<String> ask() {
+//        // Hardcoded data
+//        String level = "2-4";
+//        String[] domains = {"Spring Boot", "Java"};
+//
+//        return geminiService.askGeminiForQuestions(level, domains);
+//    }
 }
