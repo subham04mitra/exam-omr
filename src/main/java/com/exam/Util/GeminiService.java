@@ -23,6 +23,9 @@ import java.util.Map;
 @Service
 public class GeminiService {
 
+
+    @Value("${gemini.qs}")
+	 private int geminiQs;
     private final Client geminiClient;
     private final ObjectMapper objectMapper;
     
@@ -42,10 +45,11 @@ public class GeminiService {
         String domainsString = String.join(", ", domains);
         
         String prompt = String.format(
-            "Generate 2 technical interview questions for a candidate with %s year of experience, focusing on the following domains: %s. " +
+            "Generate %s technical interview questions for a candidate with %s year of experience, focusing on the following domains: %s. " +
             "Strictly return ONLY a raw JSON array of strings. " +
             "Example format: [\"Question 1\", \"Question 2\"]. " +
             "Do not include Markdown formatting like ```json ... ``` or any introductory text.",
+            grminiQs,
             level, 
             domainsString
         );
