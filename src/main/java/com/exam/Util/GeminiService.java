@@ -49,7 +49,7 @@ public class GeminiService {
             "Strictly return ONLY a raw JSON array of strings. " +
             "Example format: [\"Question 1\", \"Question 2\"]. " +
             "Do not include Markdown formatting like ```json ... ``` or any introductory text.",
-            grminiQs,
+            geminiQs,
             level, 
             domainsString
         );
